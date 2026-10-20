@@ -30,3 +30,7 @@ Códigos solo en ourairports.csv: `SAAJ`, `SBSG`, `HEBA`, `SNOS`, `SA03`, `SA01`
 Conservar DimCodigos_Lookup como referencia principal para reproducir `RutaCompleta` en SIAC; usar ourairports.csv para enriquecer con país, continente y coordenadas. No reemplazar ni fusionar sin verificar códigos y cardinalidad. No se ejecutaron cambios en PostgreSQL.
 
 **Nota:** comparación entre estas dos versiones de archivos; no equivale a una auditoría frente al catálogo oficial OACI/IATA.
+
+## Regla de prioridad vigente (20/10/2026)
+
+Por indicación de la usuaria, **`geodata/fuentes/ourairports.csv` es la autoridad para equivalencias OACI/IATA**. En coincidencias, priorizar el CSV enriquecido frente a la dimensión histórica exportada de Power BI. Utilizar la dimensión histórica solo para ampliar cobertura de códigos no contemplados por el CSV, sin reemplazar las equivalencias de éste. No inferir que el cambio ya fue implementado en PostgreSQL: requiere importación y ajuste del cálculo de `RutaCompleta`.
