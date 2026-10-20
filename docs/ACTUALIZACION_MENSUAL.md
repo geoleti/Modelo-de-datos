@@ -115,7 +115,8 @@ py -3 importar_siac_recuperable.py
 4. Ingresá la contraseña cuando la solicite el programa.
 5. Esperá el mensaje `PUBLICADO: Tabla Final.txt: ... filas válidas.` y después `Todos los archivos procesados.`.
 6. Confirmá en pgAdmin el estado `completado`, los registros por archivo y la distribución anual. Ejecutá [sql/validaciones.sql](../sql/validaciones.sql).
-7. Compará los totales de pasajeros y movimientos con Power BI. Registrá fecha, cantidad y resultado.
+7. **Actualizá la vista materializada mensual** mediante el procedimiento SQL indicado abajo. Esperá a que termine.
+8. Validá los meses, aeropuertos e indicadores mensuales. Compará los valores con Power BI y registrá el resultado.
 
 ### Si falla
 
@@ -124,3 +125,45 @@ No borres tablas ni registros. Guardá el error. Revisá `archivos_importados`. 
 **Regla esencial:** el TXT mensual debe reemplazarse **completo**, incluso si contiene correcciones antiguas. Se conservan las exclusiones históricas de Power BI y el límite desde 2015.
 
 **Nota de versión:** el script público se adaptó para obtener la configuración de un archivo local e incluye la corrección de la columna `id` de la tabla de preparación. Aún no se ha probado esta adaptación con la siguiente actualización mensual.
+
+
+## G. Actualizar el resumen mensual (OBLIGATORIO después de cada publicación)
+
+**Este paso no lo realiza el importador Python.** Ejecutalo únicamente después de confirmar `PUBLICADO` y `estado='completado'`. Si falló la importación, no lo ejecutes.
+
+1. Abrí **pgAdmin → Databases → siga → Query Tool**.
+2. Ejecutá **una sola vez**:
+
+```sql
+REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales;
+```
+
+3. Esperá a que finalice sin errores. Puede demorar por el volumen de vuelos.
+4. Verificá la cobertura:
+
+```sql
+SELECT COUNT(*) AS registros,
+       COUNT(DISTINCT iata) AS aeropuertos,
+       MIN(dia_clave_mes) AS primer_mes,
+       MAX(dia_clave_mes) AS ultimo_mes
+FROM siac.pasajeros_mensuales;
+```
+
+5. Verificá el resumen anual de pasajeros y movimientos comerciales:
+
+```sql
+SELECT anio_local,
+       SUM(pasajeros_ad_total) AS pasajeros_ad_comerciales,
+       SUM(vuelos_total) AS movimientos_comerciales
+FROM siac.pasajeros_mensuales
+WHERE anio_local = 2025
+GROUP BY anio_local;
+```
+
+**Referencia de validación al 20/10/2026:** 8.094 combinaciones, 57 aeropuertos y meses desde 2015-01-01 hasta 2026-10-01. Para 2025: **50.662.864** pasajeros AD comerciales y **411.926** movimientos comerciales. Estos valores constituyen una referencia de esa carga, **no valores fijos**: las correcciones retroactivas pueden modificarlos.
+
+El resumen comercial utiliza clases `Regular` y `No Regular` y suma `Movimientos` para sus columnas denominadas `vuelos_*`. No lo confundas con los totales de todas las clases de vuelo.
+
+**Si la vista no tiene datos:** el error `materialized view has not been populated` se resuelve ejecutando el mismo `REFRESH MATERIALIZED VIEW`. No requiere recrear la vista.
+
+**Si se agregan meses futuros:** comprobá también la cobertura de `siac.dim_fecha`. La actualización de la vista no amplía automáticamente esa dimensión.
