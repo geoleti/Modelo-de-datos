@@ -59,3 +59,12 @@ Este repositorio es público. Preservar configuración específica del servidor,
 ## Prioridad de equivalencias OACI/IATA
 
 **Decisión de la usuaria (20/10/2026):** considerar **válidas y prioritarias** las equivalencias `oaci` ↔ `iata` de `udseyt-greyf/geodata/fuentes/ourairports.csv`. En caso de discrepancias con `siac."dim_codigos_airport_OACI_IATA_lookup"`, prevalece el CSV enriquecido. Conservar el catálogo anterior como referencia histórica y complemento para códigos ausentes del CSV, sin sobrescribir las equivalencias definidas por él. Adaptar los cálculos de origen, destino y `RutaCompleta` durante una actualización controlada. **Esta decisión queda documentada; todavía no implica que se hayan aplicado cambios SQL.**
+
+## Normalización de coordenadas del CSV enriquecido (revisión de código geodata)
+
+Se identificó uso efectivo del archivo `fuentes/ourairports.csv` en:
+- [`js/oferta-demanda.js`](https://github.com/UDSEyT-GREYF/geodata/blob/main/js/oferta-demanda.js), función `parseCoordinateNumber`: elimina apóstrofes y espacios, cambia coma por punto, ensaya desplazamientos de coma decimal y prioriza rangos geográficos configurados por país o continente. Retorna `NaN` si ninguna conversión supera el rango global (latitud ±90°, longitud ±180°).
+- [`js/rutasaereas.js`](https://github.com/UDSEyT-GREYF/geodata/blob/main/js/rutasaereas.js), también implementa `parseCoordinateNumber` con rangos geográficos.
+- [`tabla-operacion-aerolineas-aeropuertos.html`](https://github.com/UDSEyT-GREYF/geodata/blob/main/tabla-operacion-aerolineas-aeropuertos.html), función `parseCoordinateValue`: elimina comillas/apóstrofes, cambia comas, concatena segmentos después del primer punto y valida rangos globales.
+
+**Precaución:** existen conversores diferentes. La selección del primer candidato dentro de un rango puede ser ambigua; no trasladar automáticamente la lógica JavaScript a una normalización permanente en PostgreSQL. Conservar `latitude`/`longitude` como texto original. Incorporar después campos numéricos derivados con control de rango, país/continente y auditoría de valores ambiguos.
