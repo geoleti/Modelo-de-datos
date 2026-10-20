@@ -1,3 +1,5 @@
+> **Actualización del modelo:** no ejecutar `sql/07_dim_codigos_y_rutas.sql` para crear `siac.vuelos_rutas`. La dimensión ya fue cargada. La ruta y las columnas calculadas se incorporan directamente a `siac.vuelos` mediante [sql/08_columnas_calculadas_vuelos.sql](../sql/08_columnas_calculadas_vuelos.sql). El archivo 07 permanece como antecedente histórico.
+
 # DimCodigos_Lookup y RutaCompleta
 
 ## Carga confirmada: 20/10/2026
