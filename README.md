@@ -39,3 +39,11 @@ Documentación técnica de la migración del modelo **SIAC de Power BI a Postgre
 - Crear acceso de solo lectura para el futuro chatbot.
 
 **Nota:** un repositorio GitHub no sustituye el respaldo de PostgreSQL. Resguardar base, scripts ejecutados y archivos fuentes en almacenamiento institucional autorizado.
+
+## Control de versiones mensuales
+
+- [Crear referencias y capturas anuales/mensuales](sql/03_control_versiones.sql).
+- [Comparar antes y después de cada actualización](sql/04_comparar_versiones.sql).
+- [Procedimiento paso a paso](docs/ACTUALIZACION_MENSUAL.md#h-control-de-versiones-y-diferencias-a-partir-de-octubre-2026).
+
+**Pendiente de ejecutar en pgAdmin:** instalación del control y primera captura de línea base. Los scripts de GitHub no ejecutan SQL en el servidor.
