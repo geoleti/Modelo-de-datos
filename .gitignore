@@ -1,0 +1,17 @@
+# No publicar datos ni configuraciones privadas
+*.env
+.env*
+*.bak
+*.dump
+*.backup
+*.pgpass
+*.log
+*.pbix
+*.pbit
+*.txt
+*.xlsx
+*.xls
+*.csv
+__pycache__/
+.venv/
+venv/
