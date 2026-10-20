@@ -26,6 +26,20 @@ Se documentaron 50 activas y 16 inactivas en Power BI. **No convertirlas directa
 
 Relaciones destacadas: `AD_IATA` con SNA, origen y destino con sus dimensiones, `Fecha_Local` con TablaFecha, `Hora` con Tabla de horas y matrícula con el inventario de AA2000.
 
+## Catálogo mundial OurAirports y dimensiones Origen/Destino
+
+**Fuente y procedimiento de Power BI, confirmado por la usuaria (20/10/2026):**
+- Fuente: [OurAirports](https://ourairports.com/) y su archivo mundial `airports.csv`.
+- Se importa el catálogo mundial y **se cruza con los códigos presentes en `TablaFinalSIAC`**. El objetivo es restringir el universo a aeropuertos utilizados como origen o destino en los vuelos SIAC; no utilizar automáticamente todos los aeropuertos mundiales.
+- Power BI tiene las consultas `airports`, `airports Origen` y `airports Destinos`. Las dos últimas funcionan como dimensiones de rol, vinculadas a `TablaFinalSIAC[Origen IATA]` y `TablaFinalSIAC[Destino IATA]`, respectivamente.
+- En las capturas del editor avanzado, `airports Origen` y `airports Destinos` cargan `https://davidmegginson.github.io/ourairports-data/airports.csv` y filtran `iata_code` no nulo ni vacío; renombran `iata_code`, `name`, `latitude_deg`, `longitude_deg` según el rol. Las capturas muestran error actual por ausencia de la columna `keywords`, referida en `Table.TransformColumnTypes`. Corregir esquema de entrada al actualizar Power BI; no asumir que esta consulta funciona hoy.
+- La consulta `airports` mostrada por la usuaria importa una copia **local** de `airports.csv` mediante `Csv.Document(File.Contents(...), [Delimiter=",", Columns=19, Encoding=1252, QuoteStyle=QuoteStyle.None])`, con encabezados promovidos. La ubicación del archivo depende del equipo y no se incorpora al repositorio.
+- En PostgreSQL existe `public.aeropuertos_mundo_ourairports_2024` con **78.345 filas y 78.345 códigos `ident` distintos**, sin vacíos, según consulta ejecutada. Esa tabla es un catálogo mundial existente, no el universo restringido de vuelos.
+- El archivo `geodata/fuentes/ourairports.csv` es **otra fuente derivada**, de 9.208 filas, usada previamente para comparar códigos OACI/IATA. No confundirlo con `airports.csv` mundial ni con la dimensión `siac."dim_codigos_airport_OACI_IATA_lookup"` de 10.084 códigos.
+- De 17 códigos presentes solo en el archivo derivado respecto de `DimCodigos_Lookup`, 16 se encontraron en `public.aeropuertos_mundo_ourairports_2024`; `SAZE:SA` no se encontró. Esto no constituye comparación integral entre ambos catálogos.
+
+**Pendiente de implementación:** reproducir en PostgreSQL el **cruce restrictivo** con los códigos efectivamente utilizados por `siac.vuelos`, separando rol origen y rol destino según corresponda. Revisar previamente el campo `iata` y su unicidad en el subconjunto. No crear todavía tablas duplicadas ni aplicar relaciones directas al catálogo completo.
+
 ## Resumen mensual pendiente
 
 El DAX `PasajerosMensuales_AñoMescompletos` crea combinaciones de **57 aeropuertos × meses de calendario** y calcula pasajeros AD y movimientos comerciales por aterrizaje/despegue y cabotaje/internacional. Usa `Movimientos` para las medidas llamadas «Vuelos». Contiene una media móvil centrada con pesos 0,5 / 1 / 0,5.
