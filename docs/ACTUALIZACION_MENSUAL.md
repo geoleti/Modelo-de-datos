@@ -245,3 +245,22 @@ REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales_validos;
 7. Registrar las diferencias contra las versiones anteriores y compararlas con Power BI.
 
 **Estado:** conservar la materializada antigua `siac.pasajeros_mensuales` como respaldo temporal. Para consultas actuales usar **`siac.pasajeros_mensuales_validos`**. No se ha sustituido ni eliminado la original. Hay que adaptar `siac.registrar_version` para que los cortes confirmados rijan también el historial; sigue pendiente.
+
+
+## J. Historial con corte confirmado y doce meses completos (implementación 20/10/2026)
+
+**SQL nuevo:** [05_registrar_version_con_corte.sql](../sql/05_registrar_version_con_corte.sql). Ejecutar **una vez** en pgAdmin, base `siga`. Reemplaza la función, pero no borra la referencia `2026-10-inicial` ni otras capturas.
+
+La función consulta `control_periodo_siac` y utiliza `vuelos_validos`. Registra todos los años. Registra exactamente doce meses terminados en el **corte confirmado**, inclusive si un mes no tiene registros (cero). Las capturas anteriores no se recalculan.
+
+**Orden correcto el próximo mes:**
+
+1. Antes de ejecutar Python: `SELECT siac.registrar_version('2026-11','antes');`. Usa el corte anterior.
+2. Ejecutar importador Python y comprobar publicación.
+3. Confirmar y guardar el nuevo corte en `control_periodo_siac` para el archivo nuevo. Si hubo demora, declarar el período efectivamente cubierto; no inferirlo de la fecha de entrega.
+4. Después: `SELECT siac.registrar_version('2026-11','despues');`. Usa el nuevo corte.
+5. Comparar los períodos con [06_comparar_cortes.sql](../sql/06_comparar_cortes.sql), ajustando el identificador.
+6. Examinar diferencias para todos los años, incluso años históricos. Comparar meses coincidentes; los meses que salen/entran en la ventana se identifican por separado.
+7. Después de validar, ejecutar `REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales_validos;`.
+
+**Cuidado:** el control señala diferencias y duplicaciones, pero aún no bloquea automáticamente una publicación anómala. No borrar o reescribir una captura registrada. Conservar el historial completo en PostgreSQL.
