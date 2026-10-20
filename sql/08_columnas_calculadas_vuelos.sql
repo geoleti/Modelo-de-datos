@@ -14,8 +14,8 @@ BEGIN
    RETURN;
  END IF;
 
- IF to_regclass('siac.dim_codigos_lookup') IS NULL THEN
-   RAISE EXCEPTION 'Falta siac.dim_codigos_lookup';
+ IF to_regclass('siac."dim_codigos_airport_OACI_IATA_lookup"') IS NULL THEN
+   RAISE EXCEPTION 'Falta siac."dim_codigos_airport_OACI_IATA_lookup"';
  END IF;
 
  definicion := regexp_replace(pg_get_viewdef('siac.vuelos'::regclass, true), ';\s*$', '');
@@ -43,8 +43,8 @@ BEGIN
     COALESCE(n.origen_iata_normalizado, NULLIF(UPPER(BTRIM(lo.iata_code)),''), n.origen_oaci_normalizado) AS origen_completo_calculado,
     COALESCE(n.destino_iata_normalizado, NULLIF(UPPER(BTRIM(ld.iata_code)),''), n.destino_oaci_normalizado) AS destino_completo_calculado
  FROM normalizado n
- LEFT JOIN siac.dim_codigos_lookup lo ON lo.icao_code=n.origen_oaci_normalizado
- LEFT JOIN siac.dim_codigos_lookup ld ON ld.icao_code=n.destino_oaci_normalizado
+ LEFT JOIN siac."dim_codigos_airport_OACI_IATA_lookup" lo ON lo.icao_code=n.origen_oaci_normalizado
+ LEFT JOIN siac."dim_codigos_airport_OACI_IATA_lookup" ld ON ld.icao_code=n.destino_oaci_normalizado
  ),
  derivado AS (
  SELECT c.*,
