@@ -167,3 +167,45 @@ El resumen comercial utiliza clases `Regular` y `No Regular` y suma `Movimientos
 **Si la vista no tiene datos:** el error `materialized view has not been populated` se resuelve ejecutando el mismo `REFRESH MATERIALIZED VIEW`. No requiere recrear la vista.
 
 **Si se agregan meses futuros:** comprobá también la cobertura de `siac.dim_fecha`. La actualización de la vista no amplía automáticamente esa dimensión.
+
+
+## H. Control de versiones y diferencias (a partir de octubre 2026)
+
+Usar [03_control_versiones.sql](../sql/03_control_versiones.sql) **una sola vez** para instalar las tablas y la función. Luego ejecutar inmediatamente:
+
+```sql
+SELECT siac.registrar_version('2026-10-inicial','base');
+```
+
+**IMPORTANTE:** el repositorio contiene la instrucción, pero esta captura inicial **no se ejecuta sola**. Ejecutarla antes de la siguiente carga, con los datos actuales. No volver a ejecutarla si ya existe.
+
+La tabla `siac.control_referencia_2025` almacena la referencia comparada con Power BI:
+- Pasajeros: 51.117.304
+- Pasajeros_AD: 50.806.954
+- Pax: 33.537.006
+- Pax_AD: 33.356.117,50
+- Movimientos: 597.824
+- Vuelos: 358.554
+
+### Cada actualización mensual, en orden
+
+1. **ANTES** de ejecutar Python, en pgAdmin, usar un identificador único. Ejemplo noviembre:
+   ```sql
+   SELECT siac.registrar_version('2026-11','antes');
+   ```
+2. Ejecutar `py -3 importar_siac_recuperable.py` en Windows. Confirmar `PUBLICADO` y `completado`.
+3. **DESPUÉS**, en pgAdmin:
+   ```sql
+   SELECT siac.registrar_version('2026-11','despues');
+   ```
+4. Ejecutar [04_comparar_versiones.sql](../sql/04_comparar_versiones.sql), modificando el identificador de versión en las consultas.
+5. Examinar diferencias **de todos los años**: pasajeros, vuelos, movimientos y cantidad de registros. Diferencias en años anteriores pueden ser correcciones legítimas o problemas. Investigar antes de aprobar.
+6. Examinar las diferencias **mensuales de los últimos doce meses**, incluido el mes actual. Guardar el identificador y el resultado del control.
+7. Comprobar duplicación de versiones por archivo y ausencia de años anteriores a 2015.
+8. **Solo después** de validar, ejecutar `REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales;`, según la sección G.
+
+La captura de los doce meses se basa en el calendario al momento de ejecutarla. Si un mes no contiene registros, ese mes puede no aparecer en el historial; la vista materializada sí completa los meses por aeropuerto.
+
+**Limitación importante:** este control registra y señala diferencias **después** de publicar. No impide por sí solo la publicación errónea. Para prevenirla, queda pendiente implementar una validación automática de totales y años antes de la transacción de publicación. No interpretes cambios retroactivos como errores sin contrastar la fuente.
+
+Las capturas históricas permanecen en PostgreSQL; el repositorio registra el procedimiento, no los valores confidenciales de cada nueva actualización.
