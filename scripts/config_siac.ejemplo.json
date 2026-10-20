@@ -1,0 +1,7 @@
+{
+  "carpeta": "REEMPLAZAR_CON_RUTA_DE_CARPETA",
+  "host": "REEMPLAZAR_CON_HOST",
+  "puerto": 5432,
+  "base": "siga",
+  "usuario": "REEMPLAZAR_CON_USUARIO"
+}
