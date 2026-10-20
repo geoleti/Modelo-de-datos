@@ -85,3 +85,42 @@ Las **vistas materializadas no se actualizan solas**. Si se crea `siac.pasajeros
 ## Seguridad
 
 El repositorio es público: no subir TXT, archivos de datos internos, claves, respaldos, nombres de usuario/host internos ni direcciones de red. Ejecutar las cargas en la red autorizada.
+
+
+## Procedimiento ejecutable mensual (versión del repositorio)
+
+**Programa:** [scripts/importar_siac_recuperable.py](../scripts/importar_siac_recuperable.py). **Configuración:** [scripts/config_siac.ejemplo.json](../scripts/config_siac.ejemplo.json).
+
+### Preparación inicial en Windows
+
+1. Abrí PowerShell. Comprobá Python con `py -3 --version`.
+2. Instalá la dependencia con `py -3 -m pip install "psycopg[binary]"`.
+3. Creá una carpeta privada mediante `mkdir "$HOME\\SIAC"`.
+4. Descargá ambos archivos desde los enlaces anteriores. Guardalos dentro de esa carpeta.
+5. Copiá `config_siac.ejemplo.json` como `config_siac.local.json`.
+6. Editá únicamente `config_siac.local.json`. Completá la carpeta compartida, el host, el puerto y el usuario de PostgreSQL. En JSON, duplicá cada barra invertida de las rutas Windows.
+7. Guardá `config_siac.local.json` junto a `importar_siac_recuperable.py`. **No compartas ni subas** ese archivo al repositorio. No guardes contraseñas.
+
+### Cada mes
+
+1. Confirmá que terminó de reemplazarse `Tabla Final.txt` en la carpeta compartida.
+2. Conservá los otros dos archivos históricos y sus nombres.
+3. Abrí PowerShell y ejecutá:
+
+```powershell
+cd "$HOME\\SIAC"
+py -3 importar_siac_recuperable.py
+```
+
+4. Ingresá la contraseña cuando la solicite el programa.
+5. Esperá el mensaje `PUBLICADO: Tabla Final.txt: ... filas válidas.` y después `Todos los archivos procesados.`.
+6. Confirmá en pgAdmin el estado `completado`, los registros por archivo y la distribución anual. Ejecutá [sql/validaciones.sql](../sql/validaciones.sql).
+7. Compará los totales de pasajeros y movimientos con Power BI. Registrá fecha, cantidad y resultado.
+
+### Si falla
+
+No borres tablas ni registros. Guardá el error. Revisá `archivos_importados`. Si el archivo no cambió, el programa permite reanudar. Nunca ejecutes dos instancias simultáneas.
+
+**Regla esencial:** el TXT mensual debe reemplazarse **completo**, incluso si contiene correcciones antiguas. Se conservan las exclusiones históricas de Power BI y el límite desde 2015.
+
+**Nota de versión:** el script público se adaptó para obtener la configuración de un archivo local e incluye la corrección de la columna `id` de la tabla de preparación. Aún no se ha probado esta adaptación con la siguiente actualización mensual.
