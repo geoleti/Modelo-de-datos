@@ -15,3 +15,6 @@
 __pycache__/
 .venv/
 venv/
+
+# Configuración local SIAC: rutas de red y host internos
+config_siac.local.json
