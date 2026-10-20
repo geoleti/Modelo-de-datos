@@ -1,3 +1,6 @@
+-- HISTÓRICO / NO EJECUTAR: la tabla de códigos ahora se denomina
+-- siac."dim_codigos_airport_OACI_IATA_lookup" y RutaCompleta reside en siac.vuelos.
+-- Consultar sql/08_columnas_calculadas_vuelos.sql para el modelo vigente.
 -- DimCodigos_Lookup y RutaCompleta, base siga.
 -- Primero cargar las 10.084 equivalencias en la dimensión.
 CREATE TABLE IF NOT EXISTS siac.dim_codigos_lookup (
