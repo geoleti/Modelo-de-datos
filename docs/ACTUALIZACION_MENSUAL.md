@@ -135,7 +135,7 @@ No borres tablas ni registros. Guardá el error. Revisá `archivos_importados`. 
 2. Ejecutá **una sola vez**:
 
 ```sql
-REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales;
+REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales_validos;
 ```
 
 3. Esperá a que finalice sin errores. Puede demorar por el volumen de vuelos.
@@ -202,10 +202,46 @@ La tabla `siac.control_referencia_2025` almacena la referencia comparada con Pow
 5. Examinar diferencias **de todos los años**: pasajeros, vuelos, movimientos y cantidad de registros. Diferencias en años anteriores pueden ser correcciones legítimas o problemas. Investigar antes de aprobar.
 6. Examinar las diferencias **mensuales de los últimos doce meses**, incluido el mes actual. Guardar el identificador y el resultado del control.
 7. Comprobar duplicación de versiones por archivo y ausencia de años anteriores a 2015.
-8. **Solo después** de validar, ejecutar `REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales;`, según la sección G.
+8. **Solo después** de validar, ejecutar `REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales_validos;`, según la sección G.
 
 La captura de los doce meses se basa en el calendario al momento de ejecutarla. Si un mes no contiene registros, ese mes puede no aparecer en el historial; la vista materializada sí completa los meses por aeropuerto.
 
 **Limitación importante:** este control registra y señala diferencias **después** de publicar. No impide por sí solo la publicación errónea. Para prevenirla, queda pendiente implementar una validación automática de totales y años antes de la transacción de publicación. No interpretes cambios retroactivos como errores sin contrastar la fuente.
 
 Las capturas históricas permanecen en PostgreSQL; el repositorio registra el procedimiento, no los valores confidenciales de cada nueva actualización.
+
+
+## I. Vista mensual con corte confirmado (validada 20/10/2026)
+
+Se creó **`siac.control_periodo_siac`** y se registró manualmente el corte **2026-09-30** para la versión publicada de `Tabla Final.txt` (archivo_id 4). La vista **`siac.vuelos_validos`** aplica este corte sin borrar los registros originales. La materializada **`siac.pasajeros_mensuales_validos`** utiliza los vuelos válidos y meses hasta el corte confirmado.
+
+**Validación inicial:** 57 aeropuertos, 8.037 combinaciones aeropuerto-mes, enero 2015 a septiembre 2026. Para 2025 se verificaron 50.662.864 pasajeros_AD comerciales y 411.926 movimientos comerciales, iguales a la vista anterior.
+
+### Cada nueva entrega, antes de actualizar el resumen
+
+1. Después de la publicación del TXT, confirmar en `siac.archivos_importados` el `id` nuevo con estado `completado`.
+2. Registrar el **corte efectivamente cubierto**. No inferirlo automáticamente de la fecha de entrega: puede haber demoras.
+3. Sustituir en el siguiente ejemplo `2026-10-31` por el último día del mes confirmado y revisar las observaciones:
+
+```sql
+INSERT INTO siac.control_periodo_siac
+  (archivo_id, fecha_actualizacion, fecha_corte, criterio, observaciones)
+SELECT id, fecha_modificacion, DATE '2026-10-31', 'manual',
+       'Cobertura validada para esta entrega.'
+FROM siac.archivos_importados
+WHERE nombre_archivo = 'Tabla Final.txt' AND estado = 'completado'
+ORDER BY id DESC LIMIT 1
+ON CONFLICT (archivo_id) DO NOTHING;
+```
+
+4. Verificar la fecha de corte con un `SELECT` antes de continuar. **ATENCIÓN:** `ON CONFLICT DO NOTHING` no modifica un corte ya registrado; si hubo un error, revisarlo y corregirlo expresamente.
+5. Ejecutar en pgAdmin:
+
+```sql
+REFRESH MATERIALIZED VIEW siac.pasajeros_mensuales_validos;
+```
+
+6. Comprobar `MAX(dia_clave_mes)`, número de aeropuertos y totales. Confirmar que no excedan el corte.
+7. Registrar las diferencias contra las versiones anteriores y compararlas con Power BI.
+
+**Estado:** conservar la materializada antigua `siac.pasajeros_mensuales` como respaldo temporal. Para consultas actuales usar **`siac.pasajeros_mensuales_validos`**. No se ha sustituido ni eliminado la original. Hay que adaptar `siac.registrar_version` para que los cortes confirmados rijan también el historial; sigue pendiente.
