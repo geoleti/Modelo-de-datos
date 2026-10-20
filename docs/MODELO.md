@@ -38,7 +38,7 @@ Relaciones destacadas: `AD_IATA` con SNA, origen y destino con sus dimensiones, 
 - El archivo `geodata/fuentes/ourairports.csv` es **otra fuente derivada**, de 9.208 filas, usada previamente para comparar códigos OACI/IATA. No confundirlo con `airports.csv` mundial ni con la dimensión `siac."dim_codigos_airport_OACI_IATA_lookup"` de 10.084 códigos.
 - De 17 códigos presentes solo en el archivo derivado respecto de `DimCodigos_Lookup`, 16 se encontraron en `public.aeropuertos_mundo_ourairports_2024`; `SAZE:SA` no se encontró. Esto no constituye comparación integral entre ambos catálogos.
 
-**Pendiente de implementación:** reproducir en PostgreSQL el **cruce restrictivo** con los códigos efectivamente utilizados por `siac.vuelos`, separando rol origen y rol destino según corresponda. Revisar previamente el campo `iata` y su unicidad en el subconjunto. No crear todavía tablas duplicadas ni aplicar relaciones directas al catálogo completo.
+**Decisión actualizada (20/10/2026):** utilizar **`udseyt-greyf/geodata/fuentes/ourairports.csv` como fuente geográfica principal**, porque la usuaria confirma que esa versión fue enriquecida. **No utilizar `public.aeropuertos_mundo_ourairports_2024` para las dimensiones SIAC**. Mantener la tabla existente sin modificarla. El cruce de origen y destino se hará con el CSV enriquecido y los códigos utilizados por `siac.vuelos`. Verificar sus columnas y su unicidad antes de implementarlo.
 
 ## Resumen mensual pendiente
 
