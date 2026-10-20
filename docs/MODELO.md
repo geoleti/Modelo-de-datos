@@ -55,3 +55,7 @@ Implementar mediante vista materializada tras comprobar su equivalencia con Powe
 ## Seguridad y publicación
 
 Este repositorio es público. Preservar configuración específica del servidor, contraseñas y TXT en recursos institucionales autorizados. El repositorio documenta, pero no copia, la base.
+
+## Prioridad de equivalencias OACI/IATA
+
+**Decisión de la usuaria (20/10/2026):** considerar **válidas y prioritarias** las equivalencias `oaci` ↔ `iata` de `udseyt-greyf/geodata/fuentes/ourairports.csv`. En caso de discrepancias con `siac."dim_codigos_airport_OACI_IATA_lookup"`, prevalece el CSV enriquecido. Conservar el catálogo anterior como referencia histórica y complemento para códigos ausentes del CSV, sin sobrescribir las equivalencias definidas por él. Adaptar los cálculos de origen, destino y `RutaCompleta` durante una actualización controlada. **Esta decisión queda documentada; todavía no implica que se hayan aplicado cambios SQL.**
