@@ -28,10 +28,14 @@ Archivo de la usuaria: `CodigosOACI_IATA_LAD.csv`. El archivo reúne referencias
 
 En las **888 filas `type = LAD`**, `icao_code` almacena un **identificador LAD** (no necesariamente un código OACI). Algunos ejemplos comprobados: `176` = EL ADUAR, `245` = EO. 10 NOVIEMBRE, `380` = EA. ALEGRIA. No aplicar validaciones de OACI de cuatro letras a esos casos. Evitar cambiar el nombre `icao_code` dentro del archivo original.
 
-### Decisiones pendientes
+### Decisión confirmada por la usuaria — 21/10/2026
+
+**`CodigosOACI_IATA_LAD.csv` es el catálogo principal y la fuente prioritaria** para búsqueda de aeropuertos y LAD. La usuaria actualiza este archivo y corrige progresivamente las posiciones LAD. Es la única fuente integrada de aeropuertos mundiales y LAD locales. Precedencia: (1) `CodigosOACI_IATA_LAD.csv`, (2) `geodata/fuentes/ourairports.csv` como complemento, (3) `siac."dim_codigos_airport_OACI_IATA_lookup"` como referencia histórica. Los campos de coordenadas pueden permanecer NULL; no eliminar registros ni inventar posiciones. Conservar `icao_code` tal como aparece, incluidos códigos LAD numéricos cuando `type = LAD`. Registrar futuras actualizaciones de la tabla por versión y fuente. Esta decisión documental no constituye una carga ya ejecutada.
+
+### Implementación pendiente
 
 1. Incorporar el archivo como **tabla de catálogo unificado versionable**, independiente del CSV OurAirports ya cargado; preservar columnas y fuente.
-2. Aclarar la regla de precedencia entre este catálogo y `geodata/fuentes/ourairports.csv` para equivalencias contradictorias. La usuaria valora este como más enriquecido, pero la prioridad del anterior había sido explícita.
+2. Aplicar la precedencia confirmada: catálogo LAD principal, CSV OurAirports complementario y dimensión histórica final.
 3. Resolver vínculos con `siac.vuelos` priorizando coincidencias reales; conservar registros SIAC sin correspondencia.
 4. Revisar codificación y normalización de coordenadas; evitar conversiones directas automáticas.
 5. Incorporar procedimiento de actualización periódica con sustitución transaccional de datos del catálogo.
