@@ -102,3 +102,18 @@ Revisar además la extensión global en QGIS/PostGIS. En pgAdmin, Geometry Viewe
 
 ## Resultado y límites
 **Confirmado:** carga de 11.478 filas y mapa mundial de la vista OurAirports. **Pendiente de confirmar:** recuento geográfico integral de la nueva vista del catálogo y equivalencias finales del modelo SIAC.
+
+## Validación geográfica confirmada — 21/10/2026
+Consulta ejecutada por la usuaria sobre `siac.catalogo_oaci_iata_lad_geo`:
+- Total: **11.478**.
+- Con `geom`: **11.476**.
+- Sin `geom`: **2**.
+- Total LAD: **888**.
+- LAD con `geom`: **888**.
+- Cobertura: **99,98 %**.
+La identificación de los dos registros sin geometría queda pendiente. Consulta:
+```sql
+SELECT id, icao_code, iata_code, name, type, latitude_d, longitude_
+FROM siac.catalogo_oaci_iata_lad_geo
+WHERE geom IS NULL;
+```
