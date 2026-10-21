@@ -34,10 +34,21 @@ En las **888 filas `type = LAD`**, `icao_code` almacena un **identificador LAD**
 
 ### Implementación pendiente
 
-1. Incorporar el archivo como **tabla de catálogo unificado versionable**, independiente del CSV OurAirports ya cargado; preservar columnas y fuente.
+1. **Completado:** incorporar el archivo como `siac.catalogo_oaci_iata_lad`, independiente del CSV OurAirports y preservando sus 14 columnas TEXT.
 2. Aplicar la precedencia confirmada: catálogo LAD principal, CSV OurAirports complementario y dimensión histórica final.
 3. Resolver vínculos con `siac.vuelos` priorizando coincidencias reales; conservar registros SIAC sin correspondencia.
 4. Revisar codificación y normalización de coordenadas; evitar conversiones directas automáticas.
 5. Incorporar procedimiento de actualización periódica con sustitución transaccional de datos del catálogo.
 
-**Estado:** archivo inspeccionado y documentado. **No está cargado aún en PostgreSQL**; no inferir que los 11.469 registros son equivalentes a la dimensión histórica de 10.084 códigos.
+**Estado:** carga ejecutada correctamente en PostgreSQL. La comprobación posterior confirma 11.469 registros.
+
+## Carga en PostgreSQL confirmada — 21/10/2026
+
+- Tabla: `siac.catalogo_oaci_iata_lad`, 14 columnas originales de tipo TEXT.
+- Fuente: archivo original de la unidad de red institucional, carpeta `DatosAeropuertosMundo`. La lectura se efectuó directamente en PowerShell; no se copió el archivo original al servidor.
+- Lectura: 11.469 registros mediante `ConvertFrom-Csv -Delimiter ';'`, usando Windows-1252.
+- Script de carga local: `12_cargar_catalogo_oaci_iata_lad.sql`, 11.469 instrucciones INSERT dentro de una transacción que reemplaza los registros de la tabla. Codificación UTF-8 sin BOM.
+- Ejecución con el programa local `ejecutar_sql_siac.py`: **SQL ejecutado correctamente**.
+- Consulta de verificación en pgAdmin: **11.469 registros**, **10.581 con latitud y longitud informadas**, **888 sin alguna coordenada informada**.
+- El conteo de 888 faltantes coincide con la cantidad de filas `type = LAD`, pero **no demuestra que correspondan exactamente a esos mismos registros**. No asignar posiciones supuestas. Se completarán en futuras versiones del catálogo.
+- Pendiente: vista espacial PostGIS; mantener geometría NULL cuando faltan coordenadas. Después, crear uniones seguras por código entre catálogo y `siac.vuelos`.
